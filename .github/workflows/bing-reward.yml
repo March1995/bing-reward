@@ -16,16 +16,24 @@ jobs:
         uses: actions/checkout@v4
 
       # 删除「进入 Bing 奖励脚本目录」这一步（多余且报错）
+      - name: 创建并切换到 /app/bing-reward 目录
+        run: |
+          sudo mkdir -p /app/bing-reward  # 创建目录（需 sudo）
+          sudo cp -r ./* /app/bing-reward/  # 复制所有脚本到该目录
+          cd /app/bing-reward  # 切换到该目录
+          ls -la  # 验证文件是否复制成功
       
       - name: 安装环境依赖
         run: |
-          # 移除 cd bing-reward（关键修复）
+          cd /app/bing-reward
+          sed -i 's/\r$//' setup_ubuntu.sh
           chmod +x setup_ubuntu.sh
           sudo ./setup_ubuntu.sh
 
       - name: 运行 Bing 奖励脚本
         run: |
-          # 移除 cd bing-reward（关键修复）
+          cd /app/bing-reward
+          sed -i 's/\r$//' start_bing_reward.sh
           chmod +x start_bing_reward.sh
           ./start_bing_reward.sh
 
