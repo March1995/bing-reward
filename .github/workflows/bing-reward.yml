@@ -1,0 +1,52 @@
+name: Bing Reward 定时执行
+
+# 触发规则：定时 + 手动触发
+on:
+  # 定时执行（UTC 时区，示例：每天北京时间 8 点执行 → UTC 0 点）
+  # cron 表达式格式：分 时 日 月 周，可根据需求调整
+  schedule:
+    - cron: '0 0 * * *'
+  # 手动触发（在 GitHub Actions 页面可手动点击运行，方便调试）
+  workflow_dispatch:
+
+# 任务配置
+jobs:
+  run-bing-reward:
+    # 指定运行环境为 Ubuntu 22.04（与你的脚本适配）
+    runs-on: ubuntu-22.04
+    # 赋予容器 sudo 权限（脚本需要安装系统依赖、Chrome 等）
+    permissions:
+      contents: read
+
+    steps:
+      # 步骤1：拉取仓库代码到运行环境
+      - name: 检出仓库代码
+        uses: actions/checkout@v4
+
+      # 步骤2：进入脚本目录（确保路径与仓库一致，若脚本在根目录可省略）
+      - name: 进入 Bing 奖励脚本目录
+        run: cd bing-reward
+
+      # 步骤3：赋予安装脚本执行权限并运行（安装依赖）
+      - name: 安装环境依赖
+        run: |
+          cd bing-reward  # 若脚本在仓库根目录，删除这行
+          chmod +x setup_ubuntu.sh
+          sudo ./setup_ubuntu.sh  # 脚本需要 sudo 权限安装系统包/Chrome
+
+      # 步骤4：赋予启动脚本执行权限并运行（核心：执行 Bing 奖励脚本）
+      - name: 运行 Bing 奖励脚本
+        run: |
+          cd bing-reward  # 若脚本在仓库根目录，删除这行
+          chmod +x start_bing_reward.sh
+          ./start_bing_reward.sh
+
+      # 可选步骤：捕获脚本运行日志（方便排查问题）
+      - name: 保存运行日志
+        if: always()  # 无论脚本成功/失败，都保存日志
+        uses: actions/upload-artifact@v4
+        with:
+          name: bing-reward-logs
+          path: |
+            /app/bing-reward/*log*  # 若脚本有日志文件，指定路径
+            /tmp/chromedriver*      # ChromeDriver 相关日志（如有）
