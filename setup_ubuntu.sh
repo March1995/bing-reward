@@ -50,7 +50,7 @@ fi
 
 # 激活虚拟环境并安装 Python 依赖
 echo "安装 Python 依赖..."
-source venv/bin/activate
+source ./venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 
