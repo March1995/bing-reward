@@ -23,7 +23,7 @@ mkdir -p /app/bing-reward/chrome_profiles/user3
 
 # 激活虚拟环境
 echo "激活虚拟环境..."
-source /venv/bin/activate
+source ./venv/bin/activate
 
 # 运行脚本
 echo "启动 Bing 奖励脚本 (3个实例，最大并行数3)..."
