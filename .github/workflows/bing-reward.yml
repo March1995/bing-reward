@@ -15,34 +15,40 @@ jobs:
       - name: 检出仓库代码
         uses: actions/checkout@v4
 
-      # 删除「进入 Bing 奖励脚本目录」这一步（多余且报错）
-      - name: 创建并切换到 /app/bing-reward 目录
+      - name: 打印目录结构（排查路径）
         run: |
-          sudo mkdir -p /app/bing-reward  # 创建目录（需 sudo）
-          sudo cp -r ./* /app/bing-reward/  # 复制所有脚本到该目录
-          cd /app/bing-reward  # 切换到该目录
-          ls -la  # 验证文件是否复制成功
-      
+          pwd
+          ls -la
+
       - name: 安装环境依赖
         run: |
-          cd /app/bing-reward
-          sed -i 's/\r$//' setup_ubuntu.sh
+          # 修复 Windows 换行符（方案1：无临时文件）
+          tr -d '\r' < setup_ubuntu.sh > setup_ubuntu_fixed.sh && mv setup_ubuntu_fixed.sh setup_ubuntu.sh
+          tr -d '\r' < start_bing_reward.sh > start_bing_reward_fixed.sh && mv start_bing_reward_fixed.sh start_bing_reward.sh
+          # 赋予执行权限
           chmod +x setup_ubuntu.sh
           sudo ./setup_ubuntu.sh
 
+      - name: 检查虚拟环境是否创建
+        run: |
+          if [ -d "./venv" ]; then
+            echo "✅ 虚拟环境创建成功"
+            ls -la ./venv/bin/
+          else
+            echo "❌ 虚拟环境创建失败！"
+            exit 1
+          fi
+
       - name: 运行 Bing 奖励脚本
         run: |
-          cd /app/bing-reward
-          sed -i 's/\r$//' start_bing_reward.sh
           chmod +x start_bing_reward.sh
           ./start_bing_reward.sh
 
-      # 可选：保存日志（若脚本有日志文件，按实际路径调整）
       - name: 保存运行日志
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: bing-reward-logs
           path: |
-            ./*log*  # 根目录下的所有日志文件
-            /tmp/*   # 临时目录日志（如有）
+            ./*log*
+            /tmp/*
